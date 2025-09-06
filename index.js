@@ -4,6 +4,10 @@ const keyBox = document.getElementById("key-box");
 const algorithmSelect = document.getElementById("algorithm-select");
 const errorBox = document.getElementById("error-message");
 
+const hamburger = document.querySelector(".hamburger");
+const navLinks = document.querySelector(".nav-links");
+
+
 const alphabets = "abcdefghijklmnopqrstuvwxyz";
 
 const algorithms = {
@@ -261,7 +265,30 @@ cipherBox.addEventListener("input", function (e) {
 });
 
 
+
+hamburger.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevent the click from reaching document
+    navLinks.classList.toggle("active");
+});
+
+// Close menu if click is outside menu or hamburger
+document.addEventListener("click", (e) => {
+    if (
+        navLinks.classList.contains("active") &&
+        !navLinks.contains(e.target) &&
+        !hamburger.contains(e.target)
+    ) {
+        navLinks.classList.remove("active");
+    }
+});
+
+
+
 // ################################# MAIN HANDLERS ENDS ########################################
+
+
+
+
 
 
 
