@@ -108,6 +108,7 @@ body {
     display: flex;
     justify-content: space-around;
     padding: 20px;
+    flex-wrap: wrap;
 }
 
 .text-card {
@@ -117,6 +118,8 @@ body {
     height: 320px;
     display: flex;
     flex-direction: column;
+    margin-bottom: 20px;
+    gap: 20px;
 
 
 }
@@ -205,9 +208,4 @@ body {
     .text-input{
         width: 100%;
     }
-
-    .text-card{
-        margin-bottom: 20px;
-    }
-
 }
