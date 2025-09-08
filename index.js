@@ -346,6 +346,9 @@ function getPlayfairCipherKey() {
 
 
 function getPlayfairGrid(key) {
+
+    key = key.toLowerCase();
+
     const rows = 5;
     const cols = 5;
     const charGrid = Array.from({ length: rows }, () => Array(cols).fill(' '));
@@ -355,7 +358,7 @@ function getPlayfairGrid(key) {
 
 
     for (let char of key) {
-        if(char == 'j'){
+        if (char == 'j') {
             continue;
         }
         if (!charSet.has(char)) {
@@ -363,8 +366,8 @@ function getPlayfairGrid(key) {
         }
     }
 
-    for(let char of alphabets){
-        if(char == 'j'){
+    for (let char of alphabets) {
+        if (char == 'j') {
             continue;
         }
         if (!charSet.has(char)) {
@@ -374,18 +377,135 @@ function getPlayfairGrid(key) {
 
     let index = 0;
 
-    for(let char of charSet){
+    for (let char of charSet) {
         let i = Math.floor(index / rows);
-        let j = index % cols ;
+        let j = index % cols;
 
         charGrid[i][j] = char;
 
         index++;
 
     }
-    
+
+    console.log("grid", charGrid);
+
     return charGrid;
 }
+
+function checkUpperCase(char) {
+    return char == char.toUpperCase();
+}
+
+function getPlayfairDigraphs(message) {
+    let digraphs = [];
+    let addedFillers = [];
+    let addFillerCount = 0;
+    for (let i = 0; i < message.length; i += 2) {
+
+        if (message[i] == message[i + 1]) {
+            digraphs.push(message[i] + (checkUpperCase(message[i]) ? "X" : "x"));
+            addedFillers.push(i+1+addFillerCount);
+            addFillerCount++;
+            i -= 1;
+        }
+
+        else if (i + 1 < message.length) {
+
+            digraphs.push(message[i] + message[i + 1]);
+
+        } else {
+            digraphs.push(message[i] + (checkUpperCase(message[i]) ? "X" : "x"))
+            addedFillers.push(i+1+addFillerCount);
+            addFillerCount++;
+           
+
+        }
+
+
+    }
+
+    console.log(digraphs, addedFillers);
+
+
+    return [digraphs, addedFillers];
+
+}
+
+function search2dArray(array, key) {
+    let i = 0;
+    let j = 0;
+    for (let row of array) {
+        for (let col of row) {
+            if (col == key) {
+                return [i, j];
+            }
+            j += 1;
+        }
+        j = 0;
+        i += 1;
+    }
+
+    return [-1, -1];
+}
+
+
+function extractLetters(message) {
+    let letters = "";
+    let nonLetters = [];
+
+    for (let i = 0; i < message.length; i++) {
+        let char = message[i];
+        console.log("char", i, char);
+        if (isLetter(char)) {
+
+            if (char == 'j' || char == 'J') {
+                if (checkUpperCase(char)) {
+                    letters += 'I'
+                } else {
+                    letters += 'i';
+                }
+            } else {
+
+                letters += char;
+            }
+
+
+        } else {
+            nonLetters.push({ index: i, char: char })
+        }
+    }
+
+    console.log(letters, nonLetters)
+
+    return [letters, nonLetters];
+}
+
+
+
+function addNonLetters(encrypted, nonLetters) {
+    let result = encrypted.split("");
+
+    for (let item of nonLetters) {
+        result.splice(item.index, 0, item.char);
+    }
+
+    return result.join("");
+}
+
+
+function shiftNonLetterIndices(nonLetters, fillerPositions) {
+    fillerPositions.sort((a, b) => a - b); // ensure in order
+    for (let fillerPos of fillerPositions) {
+        for (let item of nonLetters) {
+            if (item.index > fillerPos) {
+                item.index += 1;
+            }
+        }
+    }
+
+}
+
+
 
 function playfairEncrypt(message) {
     let encrypted = "";
@@ -393,33 +513,126 @@ function playfairEncrypt(message) {
 
     let key = getPlayfairCipherKey();
 
+
     if (key == null) {
         return "";
     }
 
+    const [letters, nonLetters] = extractLetters(message);
+
     const charGrid = getPlayfairGrid(key);
 
+    const [digraphs, addedFillers] = getPlayfairDigraphs(letters);
+
+
+
+    for (let digraph of digraphs) {
+
+        let [i1, j1] = search2dArray(charGrid, digraph[0].toLowerCase());
+        let [i2, j2] = search2dArray(charGrid, digraph[1].toLowerCase());
+
+        let d0isUpper = checkUpperCase(digraph[0]);
+        let d1isUpper = checkUpperCase(digraph[1]);
+
+
+
+        if (j1 == j2) {
+
+            encrypted += (d0isUpper ? charGrid[(i1 + 1) % 5][j1].toUpperCase() : charGrid[(i1 + 1) % 5][j1]);
+
+            encrypted += (d1isUpper ? charGrid[(i2 + 1) % 5][j2].toUpperCase() : charGrid[(i2 + 1) % 5][j2]);
+
+        } else if (i1 == i2) {
+
+            encrypted += (d0isUpper ? charGrid[i1][(j1 + 1) % 5].toUpperCase() : charGrid[i1][(j1 + 1) % 5]);
+
+            encrypted += (d1isUpper ? charGrid[i2][(j2 + 1) % 5].toUpperCase() : charGrid[i2][(j2 + 1) % 5]);
+
+
+        } else {
+
+            encrypted += (d0isUpper ? charGrid[i1][j2].toUpperCase() : charGrid[i1][j2]);
+
+            encrypted += (d1isUpper ? charGrid[i2][j1].toUpperCase() : charGrid[i2][j1]);
+
+        }
+
+    }
+
     
+    shiftNonLetterIndices(nonLetters, addedFillers);
+
+    console.log("000", addNonLetters(digraphs.join(""), nonLetters))
 
 
-
-
-
-
-
-
+    return addNonLetters(encrypted, nonLetters);
 
 }
 
-
+// for positive mod ex: -1%5 = 4
+function mod(n, m) {
+    return ((n % m) + m) % m;
+}
 
 function playfairDecrypt(encrypted) {
+    let message = "";
 
+
+    let key = getPlayfairCipherKey();
+
+
+    if (key == null) {
+        return "";
+    }
+
+    const [letters, nonLetters] = extractLetters(encrypted);
+
+    const charGrid = getPlayfairGrid(key);
+
+    const [digraphs, addedFillers] = getPlayfairDigraphs(letters);
+
+
+
+    for (let digraph of digraphs) {
+
+        let [i1, j1] = search2dArray(charGrid, digraph[0].toLowerCase());
+        let [i2, j2] = search2dArray(charGrid, digraph[1].toLowerCase());
+
+        let d0isUpper = checkUpperCase(digraph[0]);
+        let d1isUpper = checkUpperCase(digraph[1]);
+
+
+
+        if (j1 == j2) {
+
+            message += (d0isUpper ? charGrid[mod(i1 - 1, 5)][j1].toUpperCase() : charGrid[mod(i1 - 1, 5) % 5][j1]);
+
+            message += (d1isUpper ? charGrid[mod(i2 - 1, 5)][j2].toUpperCase() : charGrid[mod(i2 - 1, 5) % 5][j2]);
+
+        } else if (i1 == i2) {
+
+            message += (d0isUpper ? charGrid[i1][mod(j1 - 1, 5)].toUpperCase() : charGrid[i1][mod(j1 - 1, 5)]);
+
+            message += (d1isUpper ? charGrid[i2][mod(j2 - 1, 5)].toUpperCase() : charGrid[i2][mod(j2 - 1, 5)]);
+
+
+        } else {
+
+            message += (d0isUpper ? charGrid[i1][j2].toUpperCase() : charGrid[i1][j2]);
+
+            message += (d1isUpper ? charGrid[i2][j1].toUpperCase() : charGrid[i2][j1]);
+
+        }
+
+    }
+
+
+    
+    shiftNonLetterIndices(nonLetters, addedFillers);
+
+
+    return addNonLetters(message, nonLetters);
 }
-
-
-
-
 
 
 
@@ -460,7 +673,7 @@ keyBox.addEventListener("input", function (e) {
 
         if (messageBox.value != '') {
             cipherBox.value = algorithms[algorithmSelect.value].encrypt(messageBox.value);
-        } else {
+        } else if (cipherBox.value != '') {
             messageBox.value = algorithms[algorithmSelect.value].decrypt(cipherBox.value);
         }
 
@@ -473,7 +686,7 @@ algorithmSelect.addEventListener("change", function (e) {
 
         if (messageBox.value != '') {
             cipherBox.value = algorithms[algorithmSelect.value].encrypt(messageBox.value);
-        } else {
+        } else if (cipherBox.value != '') {
             messageBox.value = algorithms[algorithmSelect.value].decrypt(cipherBox.value);
         }
 
