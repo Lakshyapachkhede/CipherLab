@@ -16,8 +16,8 @@ const algorithms = {
     "2": { name: "monoalphabetic", encrypt: monoalphabeticEncrypt, decrypt: monoalphabeticDecrypt },
     "3": { name: "playfair", encrypt: playfairEncrypt, decrypt: playfairDecrypt },
     "4": { name: "polyalphabetic(Vigenère)", encrypt: polyalphabeticEncrypt, decrypt: polyalphabeticDecrypt },
-    "5": { name: "rail fence" },
-    "6": { name: "columnar" }
+    "5": { name: "rail fence", encrypt: railFenceEncrypt, decrypt: railFenceDecrypt },
+    "6": { name: "columnar", encrypt: columnarEncrypt, decrypt: columnarDecrypt }
 }
 
 
@@ -387,7 +387,7 @@ function getPlayfairGrid(key) {
 
     }
 
-    console.log("grid", charGrid);
+
 
     return charGrid;
 }
@@ -404,7 +404,7 @@ function getPlayfairDigraphs(message) {
 
         if (message[i] == message[i + 1]) {
             digraphs.push(message[i] + (checkUpperCase(message[i]) ? "X" : "x"));
-            addedFillers.push(i+1+addFillerCount);
+            addedFillers.push(i + 1 + addFillerCount);
             addFillerCount++;
             i -= 1;
         }
@@ -415,16 +415,16 @@ function getPlayfairDigraphs(message) {
 
         } else {
             digraphs.push(message[i] + (checkUpperCase(message[i]) ? "X" : "x"))
-            addedFillers.push(i+1+addFillerCount);
+            addedFillers.push(i + 1 + addFillerCount);
             addFillerCount++;
-           
+
 
         }
 
 
     }
 
-    console.log(digraphs, addedFillers);
+
 
 
     return [digraphs, addedFillers];
@@ -455,7 +455,7 @@ function extractLetters(message) {
 
     for (let i = 0; i < message.length; i++) {
         let char = message[i];
-        console.log("char", i, char);
+
         if (isLetter(char)) {
 
             if (char == 'j' || char == 'J') {
@@ -475,7 +475,7 @@ function extractLetters(message) {
         }
     }
 
-    console.log(letters, nonLetters)
+
 
     return [letters, nonLetters];
 }
@@ -559,13 +559,11 @@ function playfairEncrypt(message) {
 
     }
 
-    
-    shiftNonLetterIndices(nonLetters, addedFillers);
+    // TODO: add non letters
+    // shiftNonLetterIndices(nonLetters, addedFillers);
+    // return addNonLetters(encrypted, nonLetters);
 
-    console.log("000", addNonLetters(digraphs.join(""), nonLetters))
-
-
-    return addNonLetters(encrypted, nonLetters);
+    return encrypted;
 
 }
 
@@ -627,16 +625,223 @@ function playfairDecrypt(encrypted) {
     }
 
 
-    
-    shiftNonLetterIndices(nonLetters, addedFillers);
+    // TODO: add non letters
+    // shiftNonLetterIndices(nonLetters, addedFillers);
+    // return addNonLetters(message, nonLetters);
 
-
-    return addNonLetters(message, nonLetters);
+    return message;
 }
 
 
 
 // ################################# PLAYFAIR CIPHER ENDS ########################################
+
+
+// ################################# RAILFENCE CIPHER  ########################################
+
+function getRailFenceKey() {
+    return getCeaserKey();
+}
+
+function railFenceEncrypt(message) {
+    let key = getRailFenceKey();
+
+    if (isNaN(key)) {
+        return "";
+    }
+
+    if (key == 1) {
+        return message;
+    }
+
+    let rails = Array.from({ length: key }, () => '');
+
+    let row = 0;
+    let direction = 1;
+    for (let char of message) {
+        rails[row] += char;
+        row += direction;
+
+        if (row == 0 || row == key - 1) {
+            direction *= -1;
+        }
+
+
+    }
+    return rails.join("");
+}
+
+
+function railFenceDecrypt(encrypted) {
+    let message = "";
+    let key = getRailFenceKey();
+
+    if (isNaN(key)) {
+        return "";
+    }
+
+    if (key == 1) {
+        return encrypted;
+    }
+
+    const n = encrypted.length;
+
+
+
+    let matrix = Array.from({ length: key }, () => Array(n).fill(""));
+
+    let row = 0;
+    let direction = 1;
+
+
+    // mark positions with *
+    for (let col = 0; col < n; col++) {
+
+        matrix[row][col] = "*";
+        row += direction;
+
+        if (row == 0 || row == key - 1) {
+            direction *= -1;
+        }
+
+    }
+
+    // fill marked positions
+    let index = 0;
+    for (let r = 0; r < key; r++) {
+        for (let c = 0; c < n; c++) {
+            if (matrix[r][c] == '*' && index < n) {
+                matrix[r][c] = encrypted[index];
+                index++;
+            }
+        }
+    }
+
+
+    // read matrix in zig zag way
+    row = 0;
+    direction = 1;
+    for (let col = 0; col < n; col++) {
+        message += matrix[row][col];
+        row += direction;
+
+        if (row == 0 || row == key - 1) {
+            direction *= -1;
+        }
+
+    }
+
+    return message;
+}
+
+// ################################# RAILFENCE CIPHER ENDS #######################################
+
+
+// ################################# COLUMNAR CIPHER #############################################
+function getColumnarKey() {
+    return getPolyalphabeticCipherKey();
+}
+
+
+
+
+function columnarEncrypt(message) {
+    let encrypted = "";
+
+    let key = getColumnarKey();
+
+    if (key == null) {
+        return "";
+    }
+
+    key = key.toLowerCase();
+
+    const n = key.length;
+
+    let matrix = Array.from({ length: Math.ceil(message.length / n) }, () => Array(n).fill(""));
+
+    let row = 0;
+    let col = 0;
+    for (let char of message) {
+        matrix[row][col] = char;
+
+        col = (col + 1) % n;
+        if (col == 0) {
+            row++;
+        }
+
+    }
+
+    let key_list = Array.from(key).sort();
+    let key_index = 0;
+
+    for (let _ = 0; _ < n; _++) {
+        let curr_index = key.indexOf(key_list[key_index]);
+
+        for (const row of matrix) {
+            encrypted += row[curr_index];
+        }
+        key_index++;
+
+    }
+
+    return encrypted;
+}
+function columnarDecrypt(encrypted) {
+    let message = "";
+
+    let key = getColumnarKey();
+
+    if (key == null) {
+        return "";
+    }
+
+    key = key.toLowerCase();
+
+    const n = key.length;
+    const numRows = Math.ceil(encrypted.length / n);
+
+    // Initialize empty matrix
+    let matrix = Array.from({ length: numRows }, () => Array(n).fill(""));
+
+    // Sort the key and keep track of the original column order
+    let key_list = Array.from(key).sort();
+    let colOrder = key_list.map(k => key.indexOf(k));
+
+    // Handle repeated characters by ensuring unique column assignment
+    let used = Array(n).fill(false);
+    colOrder = key_list.map(k => {
+        for (let i = 0; i < n; i++) {
+            if (key[i] === k && !used[i]) {
+                used[i] = true;
+                return i;
+            }
+        }
+    });
+
+    // Fill the matrix column-wise based on the sorted key
+    let index = 0;
+    for (let k = 0; k < n; k++) {
+        let col = colOrder[k];
+        for (let row = 0; row < numRows; row++) {
+            if (index < encrypted.length) {
+                matrix[row][col] = encrypted[index++];
+            }
+        }
+    }
+
+    // Read the matrix row-wise to get the original message
+    for (let row = 0; row < numRows; row++) {
+        for (let col = 0; col < n; col++) {
+            message += matrix[row][col];
+        }
+    }
+
+    return message.trim(); // Remove any padding if necessary
+}
+
+
+// ################################# COLUMNAR CIPHER ENDS ########################################
 
 
 
@@ -682,6 +887,26 @@ keyBox.addEventListener("input", function (e) {
 });
 
 algorithmSelect.addEventListener("change", function (e) {
+    let placeholderText = "ex: ";
+    switch (algorithmSelect.value) {
+        case "1":
+        case "5":
+            placeholderText += "3";
+            break;
+        case "2":
+            placeholderText += "zyxwvutsrqponmlkjihgfedcba";
+            break;
+        case "6":
+            placeholderText += "HACK";
+            break;
+        case "4":
+        case "3":
+            placeholderText += "MONARCHY";
+            break;
+
+    }
+    keyBox.placeholder = placeholderText;
+
     if (checkBeforeEncryptionOrDecryption()) {
 
         if (messageBox.value != '') {

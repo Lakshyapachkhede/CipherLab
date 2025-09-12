@@ -138,6 +138,7 @@ body {
     transition: border-color 0.3s ease;
     resize: none;
     flex: 1;
+    overflow: auto;
 }
 
 .text-input:focus {
@@ -200,6 +201,26 @@ body {
     margin-top: 10px;
 }
 
+.text-card-single{
+    margin: 20px;
+    font-weight: 300;
+    height: unset;
+    
+}
+
+.link{
+    text-decoration: none;
+    color: #1a73e8;
+}
+
+.link:hover{
+    text-decoration: underline;
+}
+
+
+.hide-scrollbar::-webkit-scrollbar{
+    display: none;
+}
 
 @media (max-width: 768px) {
     .text-card-row{
