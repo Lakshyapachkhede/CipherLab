@@ -222,6 +222,25 @@ body {
     display: none;
 }
 
+.copy-icon{
+    width: 45px;
+    transition: all 0.3s ease;
+    padding: 10px;
+    border-radius: 50%;
+}
+.copy-icon:hover{
+    transform: translateY(-10px);
+    background-color: #efefef;
+}
+
+.jc-sb{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+
 @media (max-width: 768px) {
     .text-card-row{
         flex-direction: column;

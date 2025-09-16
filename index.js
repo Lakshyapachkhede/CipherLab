@@ -3,6 +3,8 @@ const cipherBox = document.getElementById("cipher-text-box");
 const keyBox = document.getElementById("key-box");
 const algorithmSelect = document.getElementById("algorithm-select");
 const errorBox = document.getElementById("error-message");
+const messageCopyButton = document.getElementById("copy-message");
+const cipherCopyButton = document.getElementById("copy-cipher");
 
 
 
@@ -919,6 +921,23 @@ algorithmSelect.addEventListener("change", function (e) {
 });
 
 
+
+messageCopyButton.addEventListener("click", function (e) {
+    try {
+        navigator.clipboard.writeText(messageBox.value);
+    } catch {
+        alert('Failed to copy message.');
+    }
+});
+
+
+cipherCopyButton.addEventListener("click", function (e) {
+    try {
+        navigator.clipboard.writeText(cipherBox.value);
+    } catch {
+        alert('Failed to copy cipher text.');
+    }
+})
 // ################################# MAIN HANDLERS ENDS ########################################
 
 

@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CipherLab | Classical Cipher Learning Tool by Lakshya Pachkhede</title>
-    <meta name="description" content="CipherLab is an educational tool by Lakshya Pachkhede that helps users learn and practice classical encryption techniques like Caesar Cipher, Playfair Cipher, and more.">
+    <meta name="description"
+        content="CipherLab is an educational tool by Lakshya Pachkhede that helps users learn and practice classical encryption techniques like Caesar Cipher, Playfair Cipher, and more.">
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -15,20 +16,20 @@
 
 
 
-<nav class="navbar">
-    <a href="index.html" class="logo">CipherLab</a>
-    <div class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
-    <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="#">Encrypt</a></li>
-        <li><a href="#">Decrypt</a></li>
-        <li><a href="about.html">About</a></li>
-    </ul>
-</nav>
+    <nav class="navbar">
+        <a href="index.html" class="logo">CipherLab</a>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#">Encrypt</a></li>
+            <li><a href="#">Decrypt</a></li>
+            <li><a href="about.html">About</a></li>
+        </ul>
+    </nav>
 
 
 
@@ -36,7 +37,12 @@
 
     <div class="text-card-row">
         <div class="text-card">
-            <h3>Message</h3>
+            <div class="jc-sb">
+                <h3>Message</h3>
+
+                <img src="img/copy.png" alt="Copy" class="copy-icon" id="copy-message">
+
+            </div>
 
 
             <textarea id="message-box" class="text-input"></textarea>
@@ -70,9 +76,13 @@
         </div>
 
         <div class="text-card">
-            <h3>Cipher Text</h3>
+            <div class="jc-sb">
+                <h3>Cipher Text</h3>
 
 
+                <img src="img/copy.png" alt="Copy" class="copy-icon" id="copy-cipher">
+
+            </div>
             <textarea id="cipher-text-box" class="text-input"></textarea>
 
         </div>
